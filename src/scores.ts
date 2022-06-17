@@ -26,6 +26,7 @@ async function getBlockNum(network) {
 }
 
 async function calculateScores(parent, args, key) {
+  // VP ARRAY
   const { space = '', strategies, network, addresses } = args;
   console.log('Request:', space, network, JSON.stringify(parent.strategyNames), key, parent.requestId);
 
@@ -43,6 +44,11 @@ async function calculateScores(parent, args, key) {
   let cache = true;
   if (!scores) {
     cache = false;
+
+    /*
+      Verify Verifiable presentations and return score
+    */
+
     const strategiesWithPagination = paginateStrategies(space, network, strategies);
     scores = await snapshot.utils.getScoresDirect(
       space,
@@ -52,7 +58,7 @@ async function calculateScores(parent, args, key) {
       addresses,
       snapshotBlockNum
     );
-
+    console.log(scores);
     if (withCache && state === 'final') {
       set(key, scores).then(() => {
         // console.log('Stored!');
