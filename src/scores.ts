@@ -26,8 +26,8 @@ async function getBlockNum(network) {
 }
 
 async function calculateScores(parent, args, key) {
-  // VP ARRAY
-  const { space = '', strategies, network, addresses } = args;
+  const { space = '', strategies, network, addresses, vps } = args;
+
   console.log('Request:', space, network, JSON.stringify(parent.strategyNames), key, parent.requestId);
 
   let snapshotBlockNum = 'latest';
@@ -44,21 +44,19 @@ async function calculateScores(parent, args, key) {
   let cache = true;
   if (!scores) {
     cache = false;
-
+    if (addresses.length !== vps.length) {
+      console.log('ERROR ADDRESSES LENGTH DOES NOT MATCH VPS LENGTH');
+    }
     /*
       Verify Verifiable presentations and return score
     */
+    console.log('addresses: ', args.address);
+    console.log('vps: ', args.vps);
+    addresses.forEach((address, i) => {
+      console.log(address);
+      console.log(i);
+    });
 
-    const strategiesWithPagination = paginateStrategies(space, network, strategies);
-    scores = await snapshot.utils.getScoresDirect(
-      space,
-      strategiesWithPagination,
-      network,
-      getProvider(network),
-      addresses,
-      snapshotBlockNum
-    );
-    console.log(scores);
     if (withCache && state === 'final') {
       set(key, scores).then(() => {
         // console.log('Stored!');
