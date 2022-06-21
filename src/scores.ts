@@ -44,18 +44,25 @@ async function calculateScores(parent, args, key) {
   let cache = true;
   if (!scores) {
     cache = false;
-    if (addresses.length !== vps.length) {
-      console.log('ERROR ADDRESSES LENGTH DOES NOT MATCH VPS LENGTH');
-    }
+
     /*
       Verify Verifiable presentations and return score
     */
     console.log('addresses: ', args.address);
     console.log('vps: ', args.vps);
-    addresses.forEach((address, i) => {
-      console.log(address);
-      console.log(i);
-    });
+    scores = [Object.fromEntries(addresses.map((address, i) => [address, i + 1]))];
+    scores.push({}); // FIXME: NEED AND EMPTY ONE BECUASE NUMBER OF STRATEGIES IS 2 and we have only 1 VP
+    console.log(scores);
+    // const strategiesWithPagination = paginateStrategies(space, network, strategies);
+
+    // scores = await snapshot.utils.getScoresDirect(
+    //   space,
+    //   strategiesWithPagination,
+    //   network,
+    //   getProvider(network),
+    //   addresses,
+    //   snapshotBlockNum
+    // );
 
     if (withCache && state === 'final') {
       set(key, scores).then(() => {

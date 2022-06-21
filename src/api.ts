@@ -29,7 +29,8 @@ router.get('/strategies', (req, res) => {
 router.post('/scores', async (req, res) => {
   const { params = {} } = req.body || {};
   const requestId = req.headers['x-request-id'];
-  const { space = '', network = '1', snapshot = 'latest', addresses = [] } = params;
+  // VPS
+  const { space = '', network = '1', snapshot = 'latest', addresses = [], vps = [] } = params;
   let { strategies = [] } = params;
   strategies = formatStrategies(strategies, network);
   const strategyNames = strategies.map(strategy => strategy.name);
@@ -55,7 +56,8 @@ router.post('/scores', async (req, res) => {
         network,
         snapshot,
         strategies,
-        addresses
+        addresses,
+        vps
       }
     );
   } catch (e) {
