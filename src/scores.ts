@@ -3,6 +3,7 @@ import snapshot from '@snapshot-labs/strategies';
 import { get, set } from './aws';
 import { paginateStrategies, sha256 } from './utils';
 import getProvider from './provider';
+import { verifyVP } from './veramo/utils';
 
 const eventEmitter = new events.EventEmitter();
 // https://stackoverflow.com/a/26176922
@@ -24,6 +25,7 @@ async function getBlockNum(network) {
 
   return blockNum;
 }
+const issuer = 'did:ethr:rinkeby:0x0241abd662da06d0af2f0152a80bc037f65a7f901160cfe1eb35ef3f0c532a2a4d';
 
 async function calculateScores(parent, args, key) {
   const { space = '', strategies, network, addresses, vps } = args;
@@ -48,11 +50,19 @@ async function calculateScores(parent, args, key) {
     /*
       Verify Verifiable presentations and return score
     */
-    console.log('addresses: ', args.address);
-    console.log('vps: ', args.vps);
-    scores = [Object.fromEntries(addresses.map((address, i) => [address, i + 1]))];
-    scores.push({}); // FIXME: NEED AND EMPTY ONE BECUASE NUMBER OF STRATEGIES IS 2 and we have only 1 VP
-    console.log(scores);
+    scores = [
+      Object.fromEntries(
+        await Promise.all(
+          addresses.map(async (address, i) => {
+            let res = await verifyVP(address, vps[i], issuer);
+            return [address, res ? 1 : 0];
+          })
+        )
+      )
+    ];
+    // scores.push({}); // FIXME: NEED AND EMPTY ONE BECUASE NUMBER OF STRATEGIES IS 2 and we have only 1 VP
+    // console.log(scores);
+
     // const strategiesWithPagination = paginateStrategies(space, network, strategies);
 
     // scores = await snapshot.utils.getScoresDirect(
