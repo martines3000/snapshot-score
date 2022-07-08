@@ -29,8 +29,8 @@ const schema = {
       jsonLdContextPlus:
         'https://beta.api.schemas.serto.id/v1/public/program-completion-certificate/1.0/ld-context-plus.json',
       jsonLdContext: 'https://beta.api.schemas.serto.id/v1/public/program-completion-certificate/1.0/ld-context.json',
-      jsonSchema: 'https://beta.api.schemas.serto.id/v1/public/program-completion-certificate/1.0/json-schema.json'
-    }
+      jsonSchema: 'https://beta.api.schemas.serto.id/v1/public/program-completion-certificate/1.0/json-schema.json',
+    },
   },
   description: 'The subject of this credential has successfully completed a program or accomplishment.',
   type: 'object',
@@ -43,7 +43,7 @@ const schema = {
       type: ['string', 'object'],
       format: 'uri',
       required: ['id'],
-      properties: { id: { type: 'string', format: 'uri' } }
+      properties: { id: { type: 'string', format: 'uri' } },
     },
     issuanceDate: { type: 'string', format: 'date-time' },
     expirationDate: { type: 'string', format: 'date-time' },
@@ -55,7 +55,7 @@ const schema = {
         accomplishmentType: {
           title: 'Accomplishment Type',
           description: '',
-          type: 'string'
+          type: 'string',
         },
         learnerName: { title: 'Learner Name', description: '', type: 'string' },
         achievement: { title: 'Achievement', description: '', type: 'string' },
@@ -63,19 +63,19 @@ const schema = {
           title: 'Course Provider',
           description: '',
           type: 'string',
-          format: 'uri'
-        }
-      }
+          format: 'uri',
+        },
+      },
     },
     credentialSchema: {
       type: 'object',
       required: ['id', 'type'],
       properties: {
         id: { type: 'string', format: 'uri' },
-        type: { type: 'string' }
-      }
-    }
-  }
+        type: { type: 'string' },
+      },
+    },
+  },
 };
 
 const resolveDidEthr = async (mmAddr: string, delAddr: string) => {
@@ -83,7 +83,7 @@ const resolveDidEthr = async (mmAddr: string, delAddr: string) => {
   const chainNameOrId = 'rinkeby';
   const ethrDid = new EthrDID({
     identifier: mmAddr as string,
-    chainNameOrId
+    chainNameOrId,
   });
   const didDocument = (await didResolver.resolve(ethrDid.did)).didDocument;
   console.log('DID:ETHR DID DOCUMENT:', didDocument);
@@ -92,12 +92,9 @@ const resolveDidEthr = async (mmAddr: string, delAddr: string) => {
   let retVal = false;
   if (veriKeys != null) {
     console.log('veri keys', veriKeys);
-    veriKeys.map(key => {
+    veriKeys.map((key) => {
       if (
-        key.blockchainAccountId
-          ?.split(':')[2]
-          .toUpperCase()
-          .substring(0, 42) === delAddr.toUpperCase().substring(0, 42)
+        key.blockchainAccountId?.split(':')[2].toUpperCase().substring(0, 42) === delAddr.toUpperCase().substring(0, 42)
       ) {
         retVal = true;
       }
@@ -111,76 +108,74 @@ export const verifyVP = async (address: string, vp: any, requiredIssuer: string)
     const res = await agent.verifyPresentation({
       presentation: vp,
       domain: 'did:ethr:rinkeby:0x0241abd662da06d0af2f0152a80bc037f65a7f901160cfe1eb35ef3f0c532a2a4d',
-      challenge: 'key123'
+      challenge: 'key123',
     });
 
     if (res) {
       console.log('Verifiyng VCs');
       if (vp.verifiableCredential) {
-        const unresolved: Array<Promise<boolean>> = vp.verifiableCredential?.map(
-          async (vc): Promise<boolean> => {
-            vc = vc as VerifiableCredential;
-            console.log('=================VERIFYING VC=================', vc);
+        const unresolved: Array<Promise<boolean>> = vp.verifiableCredential?.map(async (vc): Promise<boolean> => {
+          vc = vc as VerifiableCredential;
+          console.log('=================VERIFYING VC=================', vc);
 
-            // 1. Check if JWT is valid
-            const res = await agent.verifyCredential({ credential: vc });
-            console.log(res);
-            if (!res) return false;
-            console.log('Valid JWT proof');
-            // 2. Check if VC uses the correct schema
-            const validate = ajv.compile(schema);
-            if (validate(vc)) {
-              console.log('Schema is Valid');
-            } else {
-              console.log(validate.errors);
-              return false;
-            }
-            let issuer = JSON.parse(JSON.stringify(vc.issuer));
-            // 3. verify if JWT content == VC content
-            const decoded: JWTPayload = decodeJwt(vc.proof.jwt);
-
-            if (
-              decoded.sub != vc.credentialSubject.id ||
-              decoded.iss != issuer.id ||
-              (decoded as any).vc.credentialSubject.accomplishmentType != vc.credentialSubject.accomplishmentType ||
-              (decoded as any).vc.credentialSubject.achievement != vc.credentialSubject.achievement
-            ) {
-              console.log('VC content is not the same as JWT');
-              return false;
-            }
-            console.log('VC content valid');
-            // 4. verify if subject == wallet connected to the dApp
-            if (vc.credentialSubject.id?.split(':')[3].toLowerCase() != address.toLowerCase()) {
-              console.log('VC does not belong to the address');
-              return false;
-            }
-            console.log('Valid subject');
-            // 5. verify issuer
-            if (issuer.id.toLowerCase() !== requiredIssuer.toLowerCase()) {
-              console.log('failed to verify issuer');
-              return false;
-            }
-            console.log('Issuer valid');
-            // 6. verify VP holder
-            console.log(vp.holder);
-            console.log(vc.credentialSubject);
-            if (vp.holder.toLowerCase() != vc.credentialSubject.id.toLowerCase()) {
-              // 6.1. verify if delegate exists
-              console.log(await resolveDidEthr(vc.credentialSubject.id?.split(':')[3], vp.holder.split(':')[3]));
-              if (
-                vc.credentialSubject.id &&
-                (await resolveDidEthr(vc.credentialSubject.id?.split(':')[3], vp.holder.split(':')[3]))
-              )
-                console.log('Valid');
-              else {
-                console.log('Holder does not have authorization to use VC!');
-                return false;
-              }
-            }
-            console.log('Valid VP issuer');
-            return true;
+          // 1. Check if JWT is valid
+          const res = await agent.verifyCredential({ credential: vc });
+          console.log(res);
+          if (!res) return false;
+          console.log('Valid JWT proof');
+          // 2. Check if VC uses the correct schema
+          const validate = ajv.compile(schema);
+          if (validate(vc)) {
+            console.log('Schema is Valid');
+          } else {
+            console.log(validate.errors);
+            return false;
           }
-        );
+          const issuer = JSON.parse(JSON.stringify(vc.issuer));
+          // 3. verify if JWT content == VC content
+          const decoded: JWTPayload = decodeJwt(vc.proof.jwt);
+
+          if (
+            decoded.sub != vc.credentialSubject.id ||
+            decoded.iss != issuer.id ||
+            (decoded as any).vc.credentialSubject.accomplishmentType != vc.credentialSubject.accomplishmentType ||
+            (decoded as any).vc.credentialSubject.achievement != vc.credentialSubject.achievement
+          ) {
+            console.log('VC content is not the same as JWT');
+            return false;
+          }
+          console.log('VC content valid');
+          // 4. verify if subject == wallet connected to the dApp
+          if (vc.credentialSubject.id?.split(':')[3].toLowerCase() != address.toLowerCase()) {
+            console.log('VC does not belong to the address');
+            return false;
+          }
+          console.log('Valid subject');
+          // 5. verify issuer
+          if (issuer.id.toLowerCase() !== requiredIssuer.toLowerCase()) {
+            console.log('failed to verify issuer');
+            return false;
+          }
+          console.log('Issuer valid');
+          // 6. verify VP holder
+          console.log(vp.holder);
+          console.log(vc.credentialSubject);
+          if (vp.holder.toLowerCase() != vc.credentialSubject.id.toLowerCase()) {
+            // 6.1. verify if delegate exists
+            console.log(await resolveDidEthr(vc.credentialSubject.id?.split(':')[3], vp.holder.split(':')[3]));
+            if (
+              vc.credentialSubject.id &&
+              (await resolveDidEthr(vc.credentialSubject.id?.split(':')[3], vp.holder.split(':')[3]))
+            )
+              console.log('Valid');
+            else {
+              console.log('Holder does not have authorization to use VC!');
+              return false;
+            }
+          }
+          console.log('Valid VP issuer');
+          return true;
+        });
         const resolved = await Promise.all(unresolved);
         console.log('Finished, VP contains valid VC: ', resolved.includes(true), resolved);
         return resolved.includes(true);

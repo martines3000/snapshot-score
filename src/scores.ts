@@ -46,7 +46,7 @@ async function calculateScores(parent, args, key) {
   let cache = true;
   if (!scores) {
     cache = false;
-
+    console.log(vps);
     /*
       Verify Verifiable presentations and return score
     */
@@ -54,11 +54,11 @@ async function calculateScores(parent, args, key) {
       Object.fromEntries(
         await Promise.all(
           addresses.map(async (address, i) => {
-            let res = await verifyVP(address, vps[i], issuer);
+            const res = await verifyVP(address, vps[i], issuer);
             return [address, res ? 1 : 0];
           })
         )
-      )
+      ),
     ];
     // scores.push({}); // FIXME: NEED AND EMPTY ONE BECUASE NUMBER OF STRATEGIES IS 2 and we have only 1 VP
     // console.log(scores);
@@ -84,7 +84,7 @@ async function calculateScores(parent, args, key) {
   return {
     state,
     cache,
-    scores
+    scores,
   };
 }
 
@@ -94,7 +94,7 @@ export default async function scores(parent, args) {
 
   return new Promise(async (resolve, reject) => {
     // Wait for scores to be calculated
-    eventEmitter.once(key, data => (data.error ? reject(data.e) : resolve(data)));
+    eventEmitter.once(key, (data) => (data.error ? reject(data.e) : resolve(data)));
     // If this request is the first one, calculate scores
     if (eventEmitter.listenerCount(key) === 1) {
       try {

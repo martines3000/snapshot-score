@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
   const v = commit ? `${version}#${commit.substr(0, 7)}` : version;
   res.json({
     block_num: blockNumByNetwork,
-    version: v
+    version: v,
   });
 });
 
@@ -20,7 +20,7 @@ router.get('/strategies', (req, res) => {
     Object.entries(clone(snapshot.strategies)).map(([key, strategy]) => [
       key,
       // @ts-ignore
-      { key, ...strategy }
+      { key, ...strategy },
     ])
   );
   res.json(strategies);
@@ -29,19 +29,18 @@ router.get('/strategies', (req, res) => {
 router.post('/scores', async (req, res) => {
   const { params = {} } = req.body || {};
   const requestId = req.headers['x-request-id'];
-  // VPS
   const { space = '', network = '1', snapshot = 'latest', addresses = [], vps = [] } = params;
   let { strategies = [] } = params;
   strategies = formatStrategies(strategies, network);
-  const strategyNames = strategies.map(strategy => strategy.name);
+  const strategyNames = strategies.map((strategy) => strategy.name);
 
   if (['revotu.eth'].includes(space) || strategyNames.includes('pod-leader') || strategies.length === 0)
     return res.status(500).json({
       jsonrpc: '2.0',
       error: {
         code: 500,
-        data: 'something wrong with the strategies'
-      }
+        data: 'something wrong with the strategies',
+      },
     });
 
   let result;
@@ -49,7 +48,7 @@ router.post('/scores', async (req, res) => {
     result = await scores(
       {
         requestId,
-        strategyNames
+        strategyNames,
       },
       {
         space,
@@ -57,13 +56,13 @@ router.post('/scores', async (req, res) => {
         snapshot,
         strategies,
         addresses,
-        vps
+        vps,
       }
     );
   } catch (e) {
     // @ts-ignore
     const errorMessage = e?.message || e;
-    const strategiesHashes = strategies.map(strategy => sha256(JSON.stringify({ space, network, strategy })));
+    const strategiesHashes = strategies.map((strategy) => sha256(JSON.stringify({ space, network, strategy })));
     console.log(
       'Get scores failed',
       network,
@@ -78,14 +77,14 @@ router.post('/scores', async (req, res) => {
       error: {
         code: 500,
         data: e,
-        message: errorMessage
-      }
+        message: errorMessage,
+      },
     });
   }
 
   return res.json({
     jsonrpc: '2.0',
-    result
+    result,
   });
 });
 
