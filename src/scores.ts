@@ -29,7 +29,7 @@ const issuer = 'did:ethr:rinkeby:0x0241abd662da06d0af2f0152a80bc037f65a7f901160c
 
 async function calculateScores(parent, args, key) {
   const { space = '', strategies, network, addresses, vps } = args;
-
+  console.log(args);
   console.log('Request:', space, network, JSON.stringify(parent.strategyNames), key, parent.requestId);
 
   let snapshotBlockNum = 'latest';
@@ -44,41 +44,45 @@ async function calculateScores(parent, args, key) {
   if (withCache && state === 'final') scores = await get(key);
 
   let cache = true;
+
   if (!scores) {
     cache = false;
-    console.log(vps);
-    /*
-      Verify Verifiable presentations and return score
-    */
-    scores = [
-      Object.fromEntries(
-        await Promise.all(
-          addresses.map(async (address, i) => {
-            const res = await verifyVP(address, vps[i], issuer);
-            return [address, res ? 1 : 0];
-          })
-        )
-      ),
-    ];
-    // scores.push({}); // FIXME: NEED AND EMPTY ONE BECUASE NUMBER OF STRATEGIES IS 2 and we have only 1 VP
-    // console.log(scores);
 
-    // const strategiesWithPagination = paginateStrategies(space, network, strategies);
+    if (vps !== null) {
+      /*
+        Verify Verifiable presentations and return score
+      */
+      scores = [
+        Object.fromEntries(
+          await Promise.all(
+            addresses.map(async (address, i) => {
+              const res = await verifyVP(address, vps[i], issuer);
+              return [address, res ? 1 : 0];
+            })
+          )
+        ),
+      ];
 
-    // scores = await snapshot.utils.getScoresDirect(
-    //   space,
-    //   strategiesWithPagination,
-    //   network,
-    //   getProvider(network),
-    //   addresses,
-    //   snapshotBlockNum
-    // );
-
-    if (withCache && state === 'final') {
-      set(key, scores).then(() => {
-        // console.log('Stored!');
-      });
+      // scores.push({}); // FIXME: NEED AND EMPTY ONE BECUASE NUMBER OF STRATEGIES IS 2 and we have only 1 VP
+      // console.log(scores);
+    } else {
+      console.log('here');
+      const strategiesWithPagination = paginateStrategies(space, network, strategies);
+      scores = await snapshot.utils.getScoresDirect(
+        space,
+        strategiesWithPagination,
+        network,
+        getProvider(network),
+        addresses,
+        snapshotBlockNum
+      );
     }
+  }
+
+  if (withCache && state === 'final') {
+    set(key, scores).then(() => {
+      // console.log('Stored!');
+    });
   }
 
   return {
