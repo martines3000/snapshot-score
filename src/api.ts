@@ -29,11 +29,11 @@ router.get('/strategies', (req, res) => {
 router.post('/scores', async (req, res) => {
   const { params = {} } = req.body || {};
   const requestId = req.headers['x-request-id'];
-  const { space = '', network = '1', snapshot = 'latest', addresses = [], vps = null } = params;
+  const { space = '', network = '1', snapshot = 'latest', addresses = [], vps = null, issuer = '' } = params;
   let { strategies = [] } = params;
   strategies = formatStrategies(strategies, network);
   const strategyNames = strategies.map((strategy) => strategy.name);
-
+  console.log(params);
   if (['revotu.eth'].includes(space) || strategyNames.includes('pod-leader') || strategies.length === 0)
     return res.status(500).json({
       jsonrpc: '2.0',
@@ -57,6 +57,7 @@ router.post('/scores', async (req, res) => {
         strategies,
         addresses,
         vps,
+        issuer,
       }
     );
   } catch (e) {

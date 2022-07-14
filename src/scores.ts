@@ -25,11 +25,9 @@ async function getBlockNum(network) {
 
   return blockNum;
 }
-const issuer = 'did:ethr:rinkeby:0x0241abd662da06d0af2f0152a80bc037f65a7f901160cfe1eb35ef3f0c532a2a4d';
 
 async function calculateScores(parent, args, key) {
-  const { space = '', strategies, network, addresses, vps } = args;
-  console.log(args);
+  const { space = '', strategies, network, addresses, vps, issuer } = args;
   console.log('Request:', space, network, JSON.stringify(parent.strategyNames), key, parent.requestId);
 
   let snapshotBlockNum = 'latest';
