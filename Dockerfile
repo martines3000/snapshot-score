@@ -1,5 +1,5 @@
 # Node version matching the version declared in the package.json
-FROM node:16.15.1-slim
+FROM node:16.15.1-slim as builder
 
 # Update O.S.
 RUN apt-get update && apt-get upgrade -y
@@ -8,8 +8,8 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y git python make g++
 
 # Create the application workdir
-RUN mkdir -p /home/node/app
-WORKDIR /home/node/app
+RUN mkdir -p /app
+WORKDIR /app
 
 # Copy app dependencies
 COPY package*.json ./
