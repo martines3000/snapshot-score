@@ -40,7 +40,6 @@ async function calculateScores(parent, args, key) {
   let scores;
 
   if (withCache && state === 'final') scores = await get(key);
-
   let cache = true;
 
   if (!scores) {
@@ -60,9 +59,6 @@ async function calculateScores(parent, args, key) {
           )
         ),
       ];
-
-      // scores.push({}); // FIXME: NEED AND EMPTY ONE BECUASE NUMBER OF STRATEGIES IS 2 and we have only 1 VP
-      // console.log(scores);
     } else {
       console.log('here');
       const strategiesWithPagination = paginateStrategies(space, network, strategies);
@@ -79,7 +75,7 @@ async function calculateScores(parent, args, key) {
 
   if (withCache && state === 'final') {
     set(key, scores).then(() => {
-      // console.log('Stored!');
+      console.log('Stored!');
     });
   }
 
