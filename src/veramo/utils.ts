@@ -305,7 +305,7 @@ export const verifyVP = async (address: string, vp: any, requiredIssuer: string)
             }
             console.log('Issuer valid');
             // 6. verify VP holder
-            if (vp.holder.toUpperCase() != vc.sub.toUpperCase()) {
+            if (vp.holder.split(':')[3].toUpperCase() != vc.sub.split(':')[3].toUpperCase()) {
               console.log('Vp holder is not the same as VC subject');
               // 6.1. verify if delegate exists
               if (vc.sub && (await resolveDidEthr(vc.sub.split(':')[3], vp.holder.split(':')[3]))) console.log('Valid');
