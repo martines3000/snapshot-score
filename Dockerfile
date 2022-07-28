@@ -12,7 +12,7 @@ RUN mkdir -p /app
 WORKDIR /app
 
 # Copy app dependencies
-COPY yarm.lock ./
+COPY yarn.lock ./
 
 # Install app dependencies
 RUN yarn
