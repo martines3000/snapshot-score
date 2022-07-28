@@ -299,7 +299,7 @@ export const verifyVP = async (address: string, vp: any, requiredIssuer: string)
             }
             console.log('Valid subject');
             // 5. verify issuer
-            if (vc.iss.toUpperCase() !== process.env.VC_ISSUER?.toUpperCase()) {
+            if (vc.iss.toUpperCase() !== requiredIssuer.toUpperCase()) {
               console.log('failed to verify issuer');
               return false;
             }
