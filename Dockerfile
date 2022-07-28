@@ -20,7 +20,7 @@ RUN yarn
 # Bundle app source
 COPY . ./
 
-RUN npm run build
+RUN yarn run build
 
 # Set the container port
 EXPOSE 3333
