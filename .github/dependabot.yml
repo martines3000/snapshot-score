@@ -6,4 +6,4 @@ updates:
       interval: 'daily'
     rebase-strategy: auto
     allow:
-      - dependency-name: "@snapshot-labs/strategies"
+      - dependency-name: '@snapshot-labs/strategies'
