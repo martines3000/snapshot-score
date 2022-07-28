@@ -12,10 +12,10 @@ RUN mkdir -p /app
 WORKDIR /app
 
 # Copy app dependencies
-COPY package*.json ./
+COPY yarm.lock ./
 
 # Install app dependencies
-RUN npm install
+RUN yarn
 
 # Bundle app source
 COPY . ./
@@ -26,4 +26,4 @@ RUN npm run build
 EXPOSE 3333
 
 # Start the aplication
-CMD ["npm", "run", "start" ]
+CMD ["yarn", "run", "start" ]
